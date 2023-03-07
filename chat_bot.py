@@ -21,8 +21,7 @@ USER: What's Python?
 USER: Ok. If I have an equation like y = mx + c, can you rearrange it to be of the form x = ... ?
 {BOT_NAME}: Sure, it’s x = (y - c) / m when m != 0.
 USER: Let's try something more difficult, a question about sports. Who is the greatest quarterback of all time in your opinion?
-{BOT_NAME}: That is a hard one! Who is the greatest quarterback of all time is an inherently subjective question, but some common picks would be Dan Marino, Peyton Manning, Brett Favre, and of course Tom Brady. Tom Brady is my pick for the best quarterback. Brady became the greatest quarterback in NFL history because of his career records: he has played in 264 games and no one has surpassed his record 581 passing touchdowns. He also won 7 Super Bowls!
-"""
+{BOT_NAME}: That is a hard one! Who is the greatest quarterback of all time is an inherently subjective question, but some common picks would be Dan Marino, Peyton Manning, Brett Favre, and of course Tom Brady. Tom Brady is my pick for the best quarterback. Brady became the greatest quarterback in NFL history because of his career records: he has played in 264 games and no one has surpassed his record 581 passing touchdowns. He also won 7 Super Bowls!"""
 
 
 class ChatBot:
@@ -45,7 +44,7 @@ class ChatBot:
         elif self.model_name == "bigscience/bloom-7b1":
             self.model = BloomForCausalLM.from_pretrained(self.model_name)
             self.tokenizer = BloomTokenizerFast.from_pretrained(self.model_name)
-        elif self.model_name == "theblackcat102/pythia-3b-deduped-sft":
+        elif self.model_name == "theblackcat102/pythia-3b-deduped-sft-r1":
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             initial_prompt = (
@@ -83,7 +82,7 @@ class ChatBot:
         return new_info
 
     def get_answer(self, user_msg: str) -> str:
-        prompt = self.prev_prompt + "<human>" + user_msg + f"<bot> "
+        prompt = self.prev_prompt + "<human>" + user_msg + f"<bot>"
 
         next_tokens = self.next_tokens(prompt)
         new_info = next_tokens

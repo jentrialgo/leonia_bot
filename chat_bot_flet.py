@@ -10,6 +10,7 @@ class Conversation:
         self.page = page
         self.col_conversation = ft.Column(controls=[])
         self.last_text_bot = None
+        self.last_text_elapsed = None
 
         self.page.add(self.col_conversation)
 
@@ -17,6 +18,7 @@ class Conversation:
         text_bot = ft.Text(
             value=msg,
             color=ft.colors.WHITE,
+            selectable=True,
         )
         user_msg = ft.Container(
             content=text_bot, bgcolor=ft.colors.PURPLE_500, padding=20
@@ -24,29 +26,43 @@ class Conversation:
 
         self.col_conversation.controls.append(user_msg)
 
+        text_elapsed = None
         if elapsed_sec is not None:
             text_elapsed = ft.Text(
-                value=f"{elapsed_sec:.2f} sec = {elapsed_sec / 60:.2f} min",
                 style=ft.TextThemeStyle.BODY_SMALL,
                 color=ft.colors.BLACK38,
             )
             self.col_conversation.controls.append(text_elapsed)
+            self.col_conversation.update()
+            self.last_text_elapsed = text_elapsed
+            self.update_text_elapsed(elapsed_sec)
 
         self.col_conversation.update()
 
         self.last_text_bot = text_bot
 
-    def append_bot_msg(self, msg: str) -> None:
+    def append_bot_msg(self, msg: str, elapsed_sec: Optional[float] = None) -> None:
         if self.last_text_bot is None:
             raise ValueError("No previous bot message")
 
         self.last_text_bot.value += f"{msg}"
+
+        if self.last_text_elapsed is not None and elapsed_sec is not None:
+            self.update_text_elapsed(elapsed_sec)
+
         self.last_text_bot.update()
+
+    def update_text_elapsed(self, elapsed_sec):
+        self.last_text_elapsed.value = (
+            f"{elapsed_sec:.2f} sec ({elapsed_sec / 60:.2f} min)"
+        )
+        self.last_text_elapsed.update()
 
     def add_user_msg(self, msg: str) -> None:
         text = ft.Text(
             value=msg,
             color=ft.colors.WHITE,
+            selectable=True,
         )
         bot_msg = ft.Container(
             content=text,
@@ -72,8 +88,9 @@ def main(page: ft.Page):
         elapsed_sec = end - start
         conversation.add_bot_msg(next(answer_iterator), elapsed_sec)
         for answer in answer_iterator:
-            print("answer:", answer)
-            conversation.append_bot_msg(answer)
+            end = time.time()
+            elapsed_sec = end - start
+            conversation.append_bot_msg(answer, elapsed_sec)
 
         progress.visible = False
         progress.update()
@@ -101,7 +118,7 @@ def main(page: ft.Page):
     # - EleutherAI/pythia-70m
     # - bigscience/bloom-7b1
     # - theblackcat102/pythia-3b-deduped-sft
-    chat_bot = ChatBot("theblackcat102/pythia-3b-deduped-sft")
+    chat_bot = ChatBot("theblackcat102/pythia-3b-deduped-sft-r1")
 
     progress_text = ft.Text("I'm turning on. Please wait...")
     progress = ft.Column(
