@@ -19,6 +19,7 @@ class Conversation:
             value=msg,
             color=ft.colors.WHITE,
             selectable=True,
+            width=500,
         )
         user_msg = ft.Container(
             content=text_bot, bgcolor=ft.colors.PURPLE_500, padding=20
@@ -43,7 +44,9 @@ class Conversation:
 
     def append_bot_msg(self, msg: str, elapsed_sec: Optional[float] = None) -> None:
         if self.last_text_bot is None:
-            raise ValueError("No previous bot message")
+            raise ValueError(
+                "No previous bot message. You should call add_bot_msg first."
+            )
 
         self.last_text_bot.value += f"{msg}"
 
@@ -53,9 +56,14 @@ class Conversation:
         self.last_text_bot.update()
 
     def update_text_elapsed(self, elapsed_sec):
-        self.last_text_elapsed.value = (
-            f"{elapsed_sec:.2f} sec ({elapsed_sec / 60:.2f} min)"
-        )
+        words = self.last_text_bot.value.split()
+        words_per_sec = len(words) / elapsed_sec
+        if elapsed_sec < 60:
+            self.last_text_elapsed.value = (
+                f"{elapsed_sec:.0f} sec ({words_per_sec:.2f} wps)"
+            )
+        else:
+            self.last_text_elapsed.value = f"{elapsed_sec // 60:.0f} min {elapsed_sec % 60:.0f} sec ({words_per_sec:.2f} wps)"
         self.last_text_elapsed.update()
 
     def add_user_msg(self, msg: str) -> None:
@@ -63,6 +71,7 @@ class Conversation:
             value=msg,
             color=ft.colors.WHITE,
             selectable=True,
+            width=400,
         )
         bot_msg = ft.Container(
             content=text,
@@ -78,6 +87,10 @@ class Conversation:
 def main(page: ft.Page):
     def on_enter(event: ft.ControlEvent) -> None:
         conversation.add_user_msg(tf_input.value)
+
+        tf_input.disabled = True
+        tf_input.value = ""
+        tf_input.update()
 
         progress.visible = True
         progress.update()
@@ -95,14 +108,14 @@ def main(page: ft.Page):
         progress.visible = False
         progress.update()
 
-        # Clear the input
-        tf_input.value = ""
+        tf_input.disabled = False
         tf_input.update()
 
     page.scroll = True
     page.title = "Bbot"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.CrossAxisAlignment.CENTER
+    page.auto_scroll = True
 
     img = ft.Image(
         src=f"/lion.png",
@@ -137,8 +150,16 @@ def main(page: ft.Page):
     tf_input = ft.TextField(
         hint_text="Type your message here",
         on_submit=on_enter,
+        expand=True,
     )
-    page.add(tf_input)
+    button_submit = ft.FilledButton(
+        text="Submit",
+        on_click=on_enter,
+    )
+    row_input = ft.Row(
+        [tf_input, button_submit],
+    )
+    page.add(row_input)
 
 
 ft.app(target=main, view=ft.WEB_BROWSER, assets_dir="./")
