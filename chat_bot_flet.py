@@ -2,7 +2,9 @@ import time
 from typing import Optional
 import flet as ft
 
-from chat_bot import ChatBot
+from chat_bot import ChatBot, BOT_NAME
+
+INITIAL_MSG = "Hello, how can I help you?"
 
 
 class Conversation:
@@ -21,8 +23,10 @@ class Conversation:
             selectable=True,
             width=500,
         )
+        self.last_text_bot = text_bot
+
         user_msg = ft.Container(
-            content=text_bot, bgcolor=ft.colors.PURPLE_500, padding=20
+            content=text_bot, bgcolor=ft.colors.PURPLE_500, padding=20, border_radius=30
         )
 
         self.col_conversation.controls.append(user_msg)
@@ -40,8 +44,6 @@ class Conversation:
 
         self.col_conversation.update()
 
-        self.last_text_bot = text_bot
-
     def append_bot_msg(self, msg: str, elapsed_sec: Optional[float] = None) -> None:
         if self.last_text_bot is None:
             raise ValueError(
@@ -58,12 +60,14 @@ class Conversation:
     def update_text_elapsed(self, elapsed_sec):
         words = self.last_text_bot.value.split()
         words_per_sec = len(words) / elapsed_sec
+        words_per_sec_str = f"({words_per_sec:.2f} words per sec)"
+
         if elapsed_sec < 60:
-            self.last_text_elapsed.value = (
-                f"{elapsed_sec:.0f} sec ({words_per_sec:.2f} wps)"
-            )
+            elapsed_sec_str = f"{elapsed_sec:.0f} sec"
         else:
-            self.last_text_elapsed.value = f"{elapsed_sec // 60:.0f} min {elapsed_sec % 60:.0f} sec ({words_per_sec:.2f} wps)"
+            elapsed_sec_str = f"{elapsed_sec // 60:.0f} min {elapsed_sec % 60:.0f} sec"
+
+        self.last_text_elapsed.value = f"{elapsed_sec_str} {words_per_sec_str}"
         self.last_text_elapsed.update()
 
     def add_user_msg(self, msg: str) -> None:
@@ -78,28 +82,37 @@ class Conversation:
             bgcolor=ft.colors.GREEN_500,
             padding=20,
             margin=ft.Margin(top=0, left=150, right=0, bottom=0),
+            border_radius=30,
         )
 
         self.col_conversation.controls.append(bot_msg)
         self.col_conversation.update()
 
+    def clear(self):
+        self.last_text_bot = None
+        self.col_conversation.controls = []
+        self.col_conversation.update()
+
 
 def main(page: ft.Page):
     def on_enter(event: ft.ControlEvent) -> None:
-        conversation.add_user_msg(tf_input.value)
-
-        tf_input.disabled = True
+        human_msg = tf_input.value
         tf_input.value = ""
         tf_input.update()
+
+        conversation.add_user_msg(human_msg)
 
         progress.visible = True
         progress.update()
 
         start = time.time()
-        answer_iterator = chat_bot.get_answer(tf_input.value)
+        answer_iterator = chat_bot.get_answer(human_msg)
+        answer = next(answer_iterator)
         end = time.time()
         elapsed_sec = end - start
-        conversation.add_bot_msg(next(answer_iterator), elapsed_sec)
+
+        conversation.add_bot_msg(answer, elapsed_sec)
+
         for answer in answer_iterator:
             end = time.time()
             elapsed_sec = end - start
@@ -108,11 +121,15 @@ def main(page: ft.Page):
         progress.visible = False
         progress.update()
 
-        tf_input.disabled = False
         tf_input.update()
+        tf_input.focus()
+
+    def on_clear(event: ft.ControlEvent) -> None:
+        conversation.clear()
+        conversation.add_bot_msg(INITIAL_MSG)
 
     page.scroll = True
-    page.title = "Bbot"
+    page.title = f"{BOT_NAME} chat"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.CrossAxisAlignment.CENTER
     page.auto_scroll = True
@@ -145,19 +162,25 @@ def main(page: ft.Page):
     progress.visible = False
     progress.controls[1].value = "Thinking..."
 
-    conversation.add_bot_msg(f"Hello, How can I help you?")
+    conversation.add_bot_msg(INITIAL_MSG)
 
+    button_clear = ft.FilledButton(
+        text="Clear",
+        icon=ft.icons.CLEAR,
+        on_click=on_clear,
+    )
     tf_input = ft.TextField(
         hint_text="Type your message here",
         on_submit=on_enter,
         expand=True,
+        multiline=True,
     )
     button_submit = ft.FilledButton(
         text="Submit",
         on_click=on_enter,
     )
     row_input = ft.Row(
-        [tf_input, button_submit],
+        [tf_input, button_submit, button_clear],
     )
     page.add(row_input)
 
