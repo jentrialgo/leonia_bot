@@ -79,7 +79,7 @@ class Conversation:
         )
         bot_msg = ft.Container(
             content=text,
-            bgcolor=ft.colors.GREEN_500,
+            bgcolor="#00c2b9",
             padding=20,
             margin=ft.Margin(top=0, left=150, right=0, bottom=0),
             border_radius=30,
@@ -129,6 +129,7 @@ def main(page: ft.Page):
         conversation.add_bot_msg(INITIAL_MSG)
 
     page.scroll = True
+    page.theme = ft.Theme(color_scheme_seed="#008b84")
     page.title = f"{BOT_NAME} chat"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.CrossAxisAlignment.CENTER
