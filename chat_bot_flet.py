@@ -1,3 +1,6 @@
+"""This is a flet application that uses the chat_bot module to implement a chat
+bot."""
+
 import time
 import flet as ft
 
@@ -8,7 +11,13 @@ INITIAL_MSG = "Hello, how can I help you?"
 
 
 def main(page: ft.Page):
+    """This function is called when the application starts. It creates the
+    flet page and adds the controls to it."""
+
     def on_enter(event: ft.ControlEvent) -> None:
+        """This function is called when the user clicks the Submit button. It
+        sends the message to the chat bot and displays the answer in the
+        conversation."""
         human_msg = tf_input.value
         tf_input.value = ""
         tf_input.update()
@@ -29,7 +38,12 @@ def main(page: ft.Page):
         for answer in answer_iterator:
             end = time.time()
             elapsed_sec = end - start
-            conversation.append_bot_msg(answer, elapsed_sec)
+            try:
+                conversation.append_bot_msg(answer, elapsed_sec)
+            except:
+                # This can happen if the user clicks "Clear" while the AI is
+                # thinking
+                return
 
         progress.visible = False
         progress.update()
@@ -38,8 +52,12 @@ def main(page: ft.Page):
         tf_input.focus()
 
     def on_clear(event: ft.ControlEvent) -> None:
+        """This function is called when the user clicks the Clear button. It
+        clears the conversation."""
         conversation.clear()
         conversation.add_bot_msg(INITIAL_MSG)
+        progress.visible = False
+        progress.update()
 
     page.scroll = True
     page.theme = ft.Theme(color_scheme_seed="#008b84")
@@ -49,7 +67,7 @@ def main(page: ft.Page):
     page.auto_scroll = True
 
     img = ft.Image(
-        src=f"/lion.png",
+        src="/lion.png",
         width=200,
         height=200,
         fit=ft.ImageFit.CONTAIN,
@@ -58,10 +76,12 @@ def main(page: ft.Page):
 
     conversation = Conversation(page)
 
-    # Other alternative models:
+    # Other alternative models (require changes in the tokenizer and the
+    # Transformer classes in the chat_bot module):
     # - EleutherAI/pythia-70m
     # - bigscience/bloom-7b1
-    # - theblackcat102/pythia-3b-deduped-sft
+    # - theblackcat102/pythia-3b-deduped-sft-r1
+    # - Dahoas/pythia-6B-sft-response-full-static
     chat_bot = ChatBot("theblackcat102/pythia-3b-deduped-sft-r1")
 
     progress_text = ft.Text("I'm turning on. Please wait...")

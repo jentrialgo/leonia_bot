@@ -1,3 +1,6 @@
+"""This module contains the `ChatBot` class, which is used to interact with the
+chat bot."""
+
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
@@ -11,6 +14,8 @@ INITIAL_PROMPT = f"""The following is a conversation between a human and bot, a 
 
 
 class ChatBot:
+    """This class implements the chat bot."""
+
     def __init__(self, model_name: str):
         """Initialize the chat bot. This will load the model and tokenizer.
         The parameter is the name for the `from_pretrained` method of the
