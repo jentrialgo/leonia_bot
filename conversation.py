@@ -21,9 +21,12 @@ class Conversation:
         self.page.add(self.col_conversation)
 
     def _add_text_bubble(self, msg: str, bgcolor, margin) -> ft.Text:
-        text = ft.Text(
+        text = ft.Markdown(
             value=msg,
-            color=ft.colors.WHITE,
+            # color=ft.colors.WHITE,
+            extension_set="gitHubWeb",
+            code_theme="atom-one-dark",
+            code_style=ft.TextStyle(font_family="Roboto Mono"),
             selectable=True,
             width=500,
         )
@@ -52,7 +55,7 @@ class Conversation:
 
     def add_bot_msg(self, msg: str, elapsed_sec: Optional[float] = None) -> None:
         """This function adds a message from the chat bot to the conversation."""
-        self.last_text_bot = self._add_text_bubble(msg, ft.colors.PURPLE_500, margin=0)
+        self.last_text_bot = self._add_text_bubble(msg, ft.colors.PURPLE_300, margin=0)
 
         text_elapsed = None
         if elapsed_sec is not None:
