@@ -10,15 +10,12 @@ class Conversation:
     """This class implements a Conversation component, which is used to display
     the conversation between the user and the chat bot as a flet component."""
 
-    def __init__(self, page):
+    def __init__(self):
         """This function initializes the Conversation component. It creates the
         main column where the conversation messages are held."""
-        self.page = page
         self.col_conversation = ft.Column(controls=[])
         self.last_text_bot = None
         self.last_text_elapsed = None
-
-        self.page.add(self.col_conversation)
 
     def _add_text_bubble(self, msg: str, bgcolor, margin) -> ft.Text:
         text = ft.Markdown(

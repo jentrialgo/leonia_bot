@@ -26,6 +26,15 @@ class TextWithWrite(ft.Text):
         self.update()
 
 
+def init_config(page: ft.Page) -> str:
+    """This function initializes the configuration of the chat bot using flet's
+    client storage. It returns the model name."""
+    if not page.client_storage.contains_key("model"):
+        page.client_storage.set("model", "DISTILGPT2")
+
+    return page.client_storage.get("model")
+
+
 def main(page: ft.Page):
     """This function is called when the application starts. It creates the
     flet page and adds the controls to it."""
@@ -80,20 +89,6 @@ def main(page: ft.Page):
     page.title = f"{BOT_NAME} chat"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.CrossAxisAlignment.CENTER
-    page.auto_scroll = True
-
-    # Create a column container for the configuration
-    col_config = ft.Column(
-        width=500,
-    )
-
-    # Create a column container for the conversation
-    col_conversation = ft.Column(
-        width=500,
-        expand=True,
-    )
-
-    page.add(ft.Row([col_config, col_conversation]))
 
     img = ft.Image(
         src="/lion.png",
@@ -101,20 +96,42 @@ def main(page: ft.Page):
         height=200,
         fit=ft.ImageFit.CONTAIN,
     )
-    page.add(img)
 
-    conversation = Conversation(page)
+    col_content = ft.Column(controls=[img], auto_scroll=True)
+    col_config = ft.Column(controls=[])
+
+    page.add(
+        ft.Tabs(
+            expand=1,
+            selected_index=0,
+            animation_duration=300,
+            tabs=[
+                ft.Tab(
+                    text="Chat",
+                    content=ft.Container(
+                        content=col_content,
+                        padding=ft.Padding(left=0, top=10, right=0, bottom=0),
+                    ),
+                ),
+                ft.Tab(text="Configuration", content=col_config),
+            ],
+        ),
+    )
+
+    conversation = Conversation()
+    col_content.controls.append(conversation.col_conversation)
 
     progress_text = ft.Text("I'm turning on. Please wait...")
     progress = ft.Column(
         [ft.ProgressRing(), progress_text],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
     )
-    page.add(progress)
+    col_content.controls.append(progress)
 
     # Create a text control for the log
     text_log = TextWithWrite()
-    page.add(text_log)
+    col_content.controls.append(text_log)
+    page.update()
 
     # Other alternative models (require changes in the tokenizer and the
     # Transformer classes in the chat_bot module):
@@ -125,8 +142,9 @@ def main(page: ft.Page):
     # - OpenAssistant/oasst-sft-1-pythia-12b
     # - oasst-sft-4-pythia-12b-epoch-3.5
     # - distilgpt2
+    model_name = init_config(page)
     with redirect_stdout(text_log):
-        chat_bot = ChatBot("DISTILGPT2")
+        chat_bot = ChatBot(model_name)
         chat_bot.initialize()
 
     text_log.value = ""
@@ -157,7 +175,8 @@ def main(page: ft.Page):
     row_input = ft.Row(
         [tf_input, button_submit, button_clear],
     )
-    page.add(row_input)
+    col_content.controls.append(row_input)
+    page.update()
 
 
 ft.app(target=main, view=ft.WEB_BROWSER, assets_dir="./")
