@@ -1,6 +1,7 @@
 """This is a flet application that uses the chat_bot module to implement a chat
 bot."""
 
+from contextlib import redirect_stdout
 import time
 import flet as ft
 
@@ -10,11 +11,26 @@ from conversation import Conversation
 INITIAL_MSG = "Hello, how can I help you?"
 
 
+class TextWithWrite(ft.Text):
+    """This class is used to redirect the output of the chat bot to the log
+    text control."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.value = ""
+
+    def write(self, s: str) -> None:
+        """This function is called when the chat bot prints something. It
+        appends the text to the log text control."""
+        self.value += s
+        self.update()
+
+
 def main(page: ft.Page):
     """This function is called when the application starts. It creates the
     flet page and adds the controls to it."""
 
-    def on_enter(event: ft.ControlEvent) -> None:
+    def on_submit(event: ft.ControlEvent) -> None:
         """This function is called when the user clicks the Submit button. It
         sends the message to the chat bot and displays the answer in the
         conversation."""
@@ -66,6 +82,19 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.CrossAxisAlignment.CENTER
     page.auto_scroll = True
 
+    # Create a column container for the configuration
+    col_config = ft.Column(
+        width=500,
+    )
+
+    # Create a column container for the conversation
+    col_conversation = ft.Column(
+        width=500,
+        expand=True,
+    )
+
+    page.add(ft.Row([col_config, col_conversation]))
+
     img = ft.Image(
         src="/lion.png",
         width=200,
@@ -76,14 +105,6 @@ def main(page: ft.Page):
 
     conversation = Conversation(page)
 
-    # Other alternative models (require changes in the tokenizer and the
-    # Transformer classes in the chat_bot module):
-    # - EleutherAI/pythia-70m
-    # - bigscience/bloom-7b1
-    # - theblackcat102/pythia-3b-deduped-sft-r1
-    # - Dahoas/pythia-6B-sft-response-full-static
-    chat_bot = ChatBot("theblackcat102/pythia-3b-deduped-sft-r1")
-
     progress_text = ft.Text("I'm turning on. Please wait...")
     progress = ft.Column(
         [ft.ProgressRing(), progress_text],
@@ -91,7 +112,26 @@ def main(page: ft.Page):
     )
     page.add(progress)
 
-    chat_bot.initialize()
+    # Create a text control for the log
+    text_log = TextWithWrite()
+    page.add(text_log)
+
+    # Other alternative models (require changes in the tokenizer and the
+    # Transformer classes in the chat_bot module):
+    # - EleutherAI/pythia-70m
+    # - bigscience/bloom-7b1
+    # - theblackcat102/pythia-3b-deduped-sft-r1
+    # - Dahoas/pythia-6B-sft-response-full-static
+    # - OpenAssistant/oasst-sft-1-pythia-12b
+    # - oasst-sft-4-pythia-12b-epoch-3.5
+    # - distilgpt2
+    with redirect_stdout(text_log):
+        chat_bot = ChatBot("DISTILGPT2")
+        chat_bot.initialize()
+
+    text_log.value = ""
+    text_log.visible = False
+    text_log.update()
 
     progress.visible = False
     progress.controls[1].value = "Thinking..."
@@ -105,14 +145,15 @@ def main(page: ft.Page):
     )
     tf_input = ft.TextField(
         hint_text="Type your message here",
-        on_submit=on_enter,
+        on_submit=on_submit,
         expand=True,
         multiline=True,
     )
     button_submit = ft.FilledButton(
         text="Submit",
-        on_click=on_enter,
+        on_click=on_submit,
     )
+
     row_input = ft.Row(
         [tf_input, button_submit, button_clear],
     )
