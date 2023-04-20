@@ -1,12 +1,14 @@
 """This is a flet application that uses the chat_bot module to implement a chat
 bot."""
 
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
+import sys
 import time
 import flet as ft
 
-from chat_bot import ChatBot, BOT_NAME
+from chat_bot import ChatBot, BOT_NAME, HH_MODEL_REPOS
 from conversation import Conversation
+from configuration import ConfigurationControl, init_config
 
 INITIAL_MSG = "Hello, how can I help you?"
 
@@ -18,21 +20,25 @@ class TextWithWrite(ft.Text):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.value = ""
+        self.lines = []
 
     def write(self, s: str) -> None:
         """This function is called when the chat bot prints something. It
         appends the text to the log text control."""
-        self.value += s
+
+        # If the new line contains "Downloading" and there are previous lines
+        # with "Downloading", leave only the new one. This happens when
+        # huggingface downloads the model to show the download progress.
+        if "Downloading" in s:
+            lines = [l for l in self.lines if "Downloading" not in l]
+            lines.append(s)
+            self.lines = lines
+        else:
+            if s != "\r" and s != "\n":
+                self.lines.append(s)
+
+        self.value = ("").join(self.lines)
         self.update()
-
-
-def init_config(page: ft.Page) -> str:
-    """This function initializes the configuration of the chat bot using flet's
-    client storage. It returns the model name."""
-    if not page.client_storage.contains_key("model"):
-        page.client_storage.set("model", "DISTILGPT2")
-
-    return page.client_storage.get("model")
 
 
 def main(page: ft.Page):
@@ -97,8 +103,11 @@ def main(page: ft.Page):
         fit=ft.ImageFit.CONTAIN,
     )
 
+    page.add()
+
+    configuration_control = ConfigurationControl(page)
     col_content = ft.Column(controls=[img], auto_scroll=True)
-    col_config = ft.Column(controls=[])
+    col_config = ft.Column(controls=[configuration_control])
 
     page.add(
         ft.Tabs(
@@ -142,8 +151,11 @@ def main(page: ft.Page):
     # - OpenAssistant/oasst-sft-1-pythia-12b
     # - oasst-sft-4-pythia-12b-epoch-3.5
     # - distilgpt2
+    # - cerebras/Cerebras-GPT-2.7B
+    # - databricks/dolly-v2-12b
+    # - StableLM-Tuned-Alpha-7b Chat
     model_name = init_config(page)
-    with redirect_stdout(text_log):
+    with redirect_stdout(text_log), redirect_stderr(text_log):
         chat_bot = ChatBot(model_name)
         chat_bot.initialize()
 

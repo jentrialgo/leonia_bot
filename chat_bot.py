@@ -8,9 +8,10 @@ from transformers import (
 
 BOT_NAME = "Leoniabot"
 
-HH_MODEL_NAMES = {  # Hugging Face model names.
+HH_MODEL_REPOS = {  # Hugging Face model repos.
     "PYTHIA_3B_DEDUPED_SFT_R1": "theblackcat102/pythia-3b-deduped-sft-r1",
     "OASST_SFT_4_PYTHIA_12B_EPOCH_3_5": "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
+    "STABLELM-TUNED-ALPHA-3B": "stabilityai/stablelm-tuned-alpha-3b",
     "DISTILGPT2": "distilgpt2",  # Just for testing. Produces gibberish.
 }
 
@@ -36,6 +37,17 @@ MODEL_PARAMS = {
         "token_end": "<|endoftext|>",
         "token_human": "<|prompter|>",
         "token_bot": "<|assistant|>",
+    },
+    "STABLELM-TUNED-ALPHA-3B": {
+        "max_length": 1000,
+        "do_sample": True,
+        "top_k": 50,
+        "top_p": 0.95,
+        "num_return_sequences": 1,
+        "padding": True,
+        "token_end": "<|endoftext|>",
+        "token_human": "<|USER|>",
+        "token_bot": "<|ASSISTANT|>",
     },
     "DISTILGPT2": {
         "max_length": 1000,
@@ -65,7 +77,7 @@ class ChatBotConf:
         files."""
         self.model_name = model_name
 
-        if self.model_name not in HH_MODEL_NAMES.keys():
+        if self.model_name not in HH_MODEL_REPOS.keys():
             raise ValueError(f"Invalid model name: {self.model_name}")
 
         params = MODEL_PARAMS[self.model_name]
@@ -90,15 +102,15 @@ class ChatBot:
 
     def initialize(self):
         """Initialize the chat bot. This will load the model and tokenizer."""
-        print(f"Loading {self.model_name}...")
+        print(f"Loading {HH_MODEL_REPOS[self.model_name]}...")
 
-        if self.model_name not in HH_MODEL_NAMES.keys():
+        if self.model_name not in HH_MODEL_REPOS.keys():
             raise ValueError(f"Invalid model name: {self.model_name}")
 
         self.model = AutoModelForCausalLM.from_pretrained(
-            HH_MODEL_NAMES[self.model_name]
+            HH_MODEL_REPOS[self.model_name]
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(HH_MODEL_REPOS[self.model_name])
 
         self.prev_prompt = INITIAL_PROMPT
 
