@@ -50,6 +50,12 @@ def main(page: ft.Page):
         sends the message to the chat bot and displays the answer in the
         conversation."""
         human_msg = tf_input.value
+
+        # If the user clicks the Submit button without entering a message,
+        # do nothing.
+        if human_msg == "":
+            return
+
         tf_input.value = ""
         tf_input.update()
 
