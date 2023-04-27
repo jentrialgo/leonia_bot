@@ -6,7 +6,7 @@ from transformers import (
     AutoModelForCausalLM,
 )
 
-BOT_NAME = "Leoniabot"
+BOT_NAME = "Leonia Bot"
 
 HH_MODEL_REPOS = {  # Hugging Face model repos.
     "OASST_SFT_4_PYTHIA_12B_EPOCH_3_5": "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
@@ -80,7 +80,7 @@ class ChatBotConf:
         files."""
         self.model_name = model_name
 
-        if self.model_name not in HH_MODEL_REPOS.keys():
+        if self.model_name not in HH_MODEL_REPOS:
             raise ValueError(f"Invalid model name: {self.model_name}")
 
         params = MODEL_PARAMS[self.model_name]
@@ -107,7 +107,7 @@ class ChatBot:
         """Initialize the chat bot. This will load the model and tokenizer."""
         print(f"Loading {HH_MODEL_REPOS[self.model_name]}...")
 
-        if self.model_name not in HH_MODEL_REPOS.keys():
+        if self.model_name not in HH_MODEL_REPOS:
             raise ValueError(f"Invalid model name: {self.model_name}")
 
         self.model = AutoModelForCausalLM.from_pretrained(

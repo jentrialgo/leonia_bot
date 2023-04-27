@@ -2,11 +2,10 @@
 bot."""
 
 from contextlib import redirect_stderr, redirect_stdout
-import sys
 import time
 import flet as ft
 
-from chat_bot import ChatBot, BOT_NAME, HH_MODEL_REPOS
+from chat_bot import ChatBot, BOT_NAME
 from conversation import Conversation
 from configuration import ConfigurationControl, get_init_config
 
@@ -22,20 +21,20 @@ class TextWithWrite(ft.Text):
         self.value = ""
         self.lines = []
 
-    def write(self, s: str) -> None:
+    def write(self, msg: str) -> None:
         """This function is called when the chat bot prints something. It
         appends the text to the log text control."""
 
         # If the new line contains "Downloading" and there are previous lines
         # with "Downloading", leave only the new one. This happens when
         # huggingface downloads the model to show the download progress.
-        if "Downloading" in s:
+        if "Downloading" in msg:
             lines = [l for l in self.lines if "Downloading" not in l]
-            lines.append(s)
+            lines.append(msg)
             self.lines = lines
         else:
-            if s != "\r" and s != "\n":
-                self.lines.append(s)
+            if msg not in ("\r", msg != "\n"):
+                self.lines.append(msg)
 
         self.value = ("").join(self.lines)
         self.update()
@@ -48,6 +47,8 @@ class TextWithWrite(ft.Text):
 
 
 class ChatBotApp:
+    """This class implements the chat bot application."""
+
     def __init__(self, page: ft.Page):
         self.page = page
 
@@ -86,6 +87,7 @@ class ChatBotApp:
 
         page.add(self.tabs)
 
+        self.chat_bot = None
         self.conversation = Conversation()
         col_content.controls.append(self.conversation.col_conversation)
 
@@ -101,18 +103,6 @@ class ChatBotApp:
         col_content.controls.append(self.text_log)
         page.update()
 
-        # Other alternative models (require changes in the tokenizer and the
-        # Transformer classes in the chat_bot module):
-        # - EleutherAI/pythia-70m
-        # - bigscience/bloom-7b1
-        # - theblackcat102/pythia-3b-deduped-sft-r1
-        # - Dahoas/pythia-6B-sft-response-full-static
-        # - OpenAssistant/oasst-sft-1-pythia-12b
-        # - oasst-sft-4-pythia-12b-epoch-3.5
-        # - distilgpt2
-        # - cerebras/Cerebras-GPT-2.7B
-        # - databricks/dolly-v2-12b
-        # - StableLM-Tuned-Alpha-7b Chat
         self.model_name = get_init_config(page)
         self.init_model()
 
@@ -146,6 +136,7 @@ class ChatBotApp:
         page.update()
 
     def init_model(self):
+        """Initialize the chat bot with the model stored in the model field."""
         with redirect_stdout(self.text_log), redirect_stderr(self.text_log):
             self.chat_bot = ChatBot(self.model_name)
             self.chat_bot.initialize()
@@ -197,7 +188,7 @@ class ChatBotApp:
         self.tf_input.update()
         self.tf_input.focus()
 
-    def on_clear(self, vent: ft.ControlEvent) -> None:
+    def on_clear(self, event: ft.ControlEvent) -> None:
         """This function is called when the user clicks the Clear button. It
         clears the conversation."""
         self.conversation.clear()
@@ -235,7 +226,7 @@ class ChatBotApp:
 def main(page: ft.Page):
     """This function is called when the application starts. It creates the
     flet page and adds the controls to it."""
-    app = ChatBotApp(page)
+    ChatBotApp(page)
 
 
 ft.app(target=main, view=ft.WEB_BROWSER, assets_dir="./")

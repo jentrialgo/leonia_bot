@@ -6,7 +6,7 @@ from typing import List
 from huggingface_hub import scan_cache_dir
 import flet as ft
 
-from chat_bot import HH_MODEL_REPOS, MODEL_PARAMS, ChatBot
+from chat_bot import HH_MODEL_REPOS, MODEL_PARAMS
 
 
 def get_init_config(page: ft.Page) -> str:
@@ -28,16 +28,16 @@ class ConfigurationControl(ft.UserControl):
         self.dd_model = None
         self.text_model_info = None
         self.button_apply = None
-        self.change_bot_hook = None
+        self.conf_change_hook = None
 
     @staticmethod
     def __params_to_str(params: dict) -> str:
         """This function converts the model parameters to a string."""
-        s = ""
+        res = ""
         for key, value in params.items():
-            s += f"{key}: {value}\n"
+            res += f"{key}: {value}\n"
 
-        return s
+        return res
 
     def __dropdown_changed(self, event):
         """This function is called when the user selects a model from the
@@ -61,11 +61,11 @@ class ConfigurationControl(ft.UserControl):
         repos = scan_cache_dir().repos
         repo_names = [repo.repo_id for repo in repos]
         options = []
-        for model_name in HH_MODEL_REPOS.keys():
-            if HH_MODEL_REPOS[model_name] in repo_names:
-                option = HH_MODEL_REPOS[model_name]
+        for model_name, model_repo in HH_MODEL_REPOS.items():
+            if model_repo in repo_names:
+                option = model_repo
             else:
-                option = f"{HH_MODEL_REPOS[model_name]} (not downloaded)"
+                option = f"{model_repo} (not downloaded)"
             options.append(ft.dropdown.Option(text=option, key=model_name))
 
         return options
