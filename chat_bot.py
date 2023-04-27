@@ -9,25 +9,15 @@ from transformers import (
 BOT_NAME = "Leoniabot"
 
 HH_MODEL_REPOS = {  # Hugging Face model repos.
-    "PYTHIA_3B_DEDUPED_SFT_R1": "theblackcat102/pythia-3b-deduped-sft-r1",
     "OASST_SFT_4_PYTHIA_12B_EPOCH_3_5": "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
+    "OASST_SFT_7_STABLELM_7B_EPOCH_3": "OpenAssistant/stablelm-7b-sft-v7-epoch-3",
     "STABLELM-TUNED-ALPHA-3B": "stabilityai/stablelm-tuned-alpha-3b",
     "DISTILGPT2": "distilgpt2",  # Just for testing. Produces gibberish.
 }
 
 MODEL_PARAMS = {
-    "PYTHIA_3B_DEDUPED_SFT_R1": {
-        "max_length": 1000,
-        "do_sample": True,
-        "top_k": 50,
-        "top_p": 0.95,
-        "num_return_sequences": 1,
-        "padding": True,
-        "token_end": "<|endoftext|>",
-        "token_human": "<human>",
-        "token_bot": "<bot>",
-    },
     "OASST_SFT_4_PYTHIA_12B_EPOCH_3_5": {
+        "requirements": "48 GB RAM, 23 GB disk",
         "max_length": 1000,
         "do_sample": True,
         "top_k": 50,
@@ -38,13 +28,26 @@ MODEL_PARAMS = {
         "token_human": "<|prompter|>",
         "token_bot": "<|assistant|>",
     },
-    "STABLELM-TUNED-ALPHA-3B": {
+    "OASST_SFT_7_STABLELM_7B_EPOCH_3": {
+        "requirements": "32 GB RAM (CPU), 15 GB disk",
         "max_length": 1000,
         "do_sample": True,
         "top_k": 50,
         "top_p": 0.95,
         "num_return_sequences": 1,
         "padding": True,
+        "token_end": "<|endoftext|>",
+        "token_human": "<|USER|>",
+        "token_bot": "<|ASSISTANT|>",
+    },
+    "STABLELM-TUNED-ALPHA-3B": {
+        "requirements": "16 GB RAM (CPU), 14 GB disk",
+        "max_length": 1000,
+        "do_sample": True,
+        "top_k": 50,
+        "top_p": 0.95,
+        "num_return_sequences": 1,
+        "padding": False,
         "token_end": "<|endoftext|>",
         "token_human": "<|USER|>",
         "token_bot": "<|ASSISTANT|>",
