@@ -1,6 +1,7 @@
 """This module contains the `ChatBot` class, which is used to interact with the
 chat bot."""
 
+from typing import Iterator
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
@@ -8,15 +9,9 @@ from transformers import (
 
 BOT_NAME = "Leonia Bot"
 
-HH_MODEL_REPOS = {  # Hugging Face model repos.
-    "OASST_SFT_4_PYTHIA_12B_EPOCH_3_5": "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
-    "OASST_SFT_7_STABLELM_7B_EPOCH_3": "OpenAssistant/stablelm-7b-sft-v7-epoch-3",
-    "STABLELM-TUNED-ALPHA-3B": "stabilityai/stablelm-tuned-alpha-3b",
-    "DISTILGPT2": "distilgpt2",  # Just for testing. Produces gibberish.
-}
-
-MODEL_PARAMS = {
+MODEL_INFO = {
     "OASST_SFT_4_PYTHIA_12B_EPOCH_3_5": {
+        "repo": "OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
         "requirements": "48 GB RAM, 23 GB disk",
         "max_length": 1000,
         "do_sample": True,
@@ -29,6 +24,7 @@ MODEL_PARAMS = {
         "token_bot": "<|assistant|>",
     },
     "OASST_SFT_7_STABLELM_7B_EPOCH_3": {
+        "repo": "OpenAssistant/stablelm-7b-sft-v7-epoch-3",
         "requirements": "32 GB RAM (CPU), 15 GB disk",
         "max_length": 1000,
         "do_sample": True,
@@ -41,6 +37,7 @@ MODEL_PARAMS = {
         "token_bot": "<|ASSISTANT|>",
     },
     "STABLELM-TUNED-ALPHA-3B": {
+        "repo": "stabilityai/stablelm-tuned-alpha-3b",
         "requirements": "16 GB RAM (CPU), 14 GB disk",
         "max_length": 1000,
         "do_sample": True,
@@ -52,7 +49,8 @@ MODEL_PARAMS = {
         "token_human": "<|USER|>",
         "token_bot": "<|ASSISTANT|>",
     },
-    "DISTILGPT2": {
+    "DISTILGPT2": {  # Just for testing. Produces gibberish.
+        "repo": "distilgpt2",
         "max_length": 1000,
         "do_sample": True,
         "top_k": 50,
@@ -80,10 +78,10 @@ class ChatBotConf:
         files."""
         self.model_name = model_name
 
-        if self.model_name not in HH_MODEL_REPOS:
+        if self.model_name not in MODEL_INFO:
             raise ValueError(f"Invalid model name: {self.model_name}")
 
-        params = MODEL_PARAMS[self.model_name]
+        params = MODEL_INFO[self.model_name]
         self.token_end = params["token_end"]
         self.token_human = params["token_human"]
         self.token_bot = params["token_bot"]
@@ -105,21 +103,20 @@ class ChatBot:
 
     def initialize(self):
         """Initialize the chat bot. This will load the model and tokenizer."""
-        print(f"Loading {HH_MODEL_REPOS[self.model_name]}...")
+        print(f"Loading {MODEL_INFO[self.model_name]['repo']}...")
 
-        if self.model_name not in HH_MODEL_REPOS:
+        if self.model_name not in MODEL_INFO:
             raise ValueError(f"Invalid model name: {self.model_name}")
 
-        self.model = AutoModelForCausalLM.from_pretrained(
-            HH_MODEL_REPOS[self.model_name]
-        )
-        self.tokenizer = AutoTokenizer.from_pretrained(HH_MODEL_REPOS[self.model_name])
+        repo = MODEL_INFO[self.model_name]["repo"]
+        self.model = AutoModelForCausalLM.from_pretrained(repo)
+        self.tokenizer = AutoTokenizer.from_pretrained(repo)
 
         self.prev_prompt = INITIAL_PROMPT
 
     def next_tokens(self, prompt: str) -> str:
         """Get the next tokens for the given prompt."""
-        params = MODEL_PARAMS[self.model_name]
+        params = MODEL_INFO[self.model_name]
         input_ids = self.tokenizer.encode(
             prompt,
             return_tensors="pt",
@@ -143,7 +140,7 @@ class ChatBot:
 
         return new_info
 
-    def get_answer(self, user_msg: str) -> str:
+    def get_answer(self, user_msg: str) -> Iterator[str]:
         """Get the answer for the given user message."""
         prompt = (
             self.prev_prompt + self.conf.token_human + user_msg + self.conf.token_bot

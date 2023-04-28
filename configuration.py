@@ -6,7 +6,7 @@ from typing import List
 from huggingface_hub import scan_cache_dir
 import flet as ft
 
-from chat_bot import HH_MODEL_REPOS, MODEL_PARAMS
+from chat_bot import MODEL_INFO
 
 
 def get_init_config(page: ft.Page) -> str:
@@ -44,7 +44,7 @@ class ConfigurationControl(ft.UserControl):
         dropdown."""
         model_name = self.dd_model.value
         self.text_model_info.value = ConfigurationControl.__params_to_str(
-            MODEL_PARAMS[model_name]
+            MODEL_INFO[model_name]
         )
         self.text_model_info.update()
 
@@ -58,11 +58,12 @@ class ConfigurationControl(ft.UserControl):
 
     def __create_model_name_options(self) -> List[ft.dropdown.Option]:
         """This function creates the options for the model dropdown."""
-        repos = scan_cache_dir().repos
-        repo_names = [repo.repo_id for repo in repos]
+        cached_repos = scan_cache_dir().repos
+        cached_repo_names = [repo.repo_id for repo in cached_repos]
         options = []
-        for model_name, model_repo in HH_MODEL_REPOS.items():
-            if model_repo in repo_names:
+        for model_name, info in MODEL_INFO.items():
+            model_repo = info["repo"]
+            if model_repo in cached_repo_names:
                 option = model_repo
             else:
                 option = f"{model_repo} (not downloaded)"
@@ -92,7 +93,7 @@ class ConfigurationControl(ft.UserControl):
         model_name = get_init_config(self.page)
         self.dd_model.value = model_name
         self.text_model_info.value = ConfigurationControl.__params_to_str(
-            MODEL_PARAMS[model_name]
+            MODEL_INFO[model_name]
         )
         self.update()
 
