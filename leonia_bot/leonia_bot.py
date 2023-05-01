@@ -111,6 +111,12 @@ class ChatBotApp:
         self.progress.visible = False
         self.progress.controls[1].value = "Thinking..."
 
+        if self.model_name == "DISTILGPT2":
+            self.conversation.add_bot_msg(
+                "This model, distilgpt2, is only for testing and produces"
+                " gibberish. Select another model in the Configuration tab,"
+                " paying attention at the requirements."
+            )
         self.conversation.add_bot_msg(INITIAL_MSG)
 
         button_clear = ft.FilledButton(
