@@ -17,3 +17,4 @@
 - Add a `Copy` button to each chat message
 - Make multiple lines inside a chat message selectable
 - Improve the layout
+- Add an icon
