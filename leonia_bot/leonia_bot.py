@@ -59,7 +59,7 @@ class ChatBotApp:
         page.vertical_alignment = ft.CrossAxisAlignment.CENTER
 
         img = ft.Image(
-            src="/lion.png",
+            src="/leonia.png",
             width=200,
             height=200,
             fit=ft.ImageFit.CONTAIN,
