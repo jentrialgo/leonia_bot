@@ -235,4 +235,4 @@ def main(page: ft.Page):
     ChatBotApp(page)
 
 
-ft.app(target=main, view=ft.WEB_BROWSER, assets_dir="./")
+ft.app(target=main, port=8733, view=ft.WEB_BROWSER, assets_dir="./")
