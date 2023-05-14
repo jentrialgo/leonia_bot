@@ -52,7 +52,6 @@ class ChatBotApp:
     def __init__(self, page: ft.Page):
         self.page = page
 
-        page.scroll = True
         page.theme = ft.Theme(color_scheme_seed="#008b84")
         page.title = f"{BOT_NAME} chat"
         page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
@@ -66,7 +65,7 @@ class ChatBotApp:
         )
 
         configuration_control = ConfigurationControl(page)
-        col_content = ft.Column(controls=[img], auto_scroll=True)
+        col_content = ft.Column(controls=[img], auto_scroll=True, scroll=True)
         col_config = ft.Column(controls=[configuration_control])
 
         self.tabs = ft.Tabs(
