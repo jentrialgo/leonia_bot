@@ -132,6 +132,7 @@ class ChatBotApp:
         button_submit = ft.FilledButton(
             text="Submit",
             on_click=self.on_submit,
+            icon=ft.icons.SEND,
         )
 
         row_input = ft.Row(
