@@ -8,6 +8,7 @@ import flet as ft
 from chat_bot import ChatBot, BOT_NAME
 from conversation import Conversation
 from configuration import ConfigurationControl, get_init_config
+from model_configurations import ModelConfigurations
 
 INITIAL_MSG = "Hello, how can I help you?"
 
@@ -64,7 +65,9 @@ class ChatBotApp:
             fit=ft.ImageFit.CONTAIN,
         )
 
-        configuration_control = ConfigurationControl(page)
+        self.model_confs = ModelConfigurations("model_confs.yaml")
+
+        configuration_control = ConfigurationControl(page, self.model_confs)
         col_content = ft.Column(controls=[img], auto_scroll=True, scroll=True)
         col_config = ft.Column(controls=[configuration_control])
 
@@ -144,7 +147,7 @@ class ChatBotApp:
     def init_model(self):
         """Initialize the chat bot with the model stored in the model field."""
         with redirect_stdout(self.text_log), redirect_stderr(self.text_log):
-            self.chat_bot = ChatBot(self.model_name)
+            self.chat_bot = ChatBot(self.model_name, self.model_confs)
             self.chat_bot.initialize()
 
         self.text_log.reset()
@@ -216,7 +219,7 @@ class ChatBotApp:
 
         self.model_name = new_model_name
 
-        self.chat_bot = ChatBot(self.model_name)
+        self.chat_bot = ChatBot(self.model_name, self.model_confs)
         self.text_log.reset()
         self.text_log.visible = True
 

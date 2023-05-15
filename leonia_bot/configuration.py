@@ -6,7 +6,7 @@ from typing import List
 from huggingface_hub import scan_cache_dir
 import flet as ft
 
-from chat_bot import MODEL_INFO
+from model_configurations import ModelConfigurations
 
 
 def get_init_config(page: ft.Page) -> str:
@@ -22,30 +22,20 @@ class ConfigurationControl(ft.UserControl):
     """This class implements a configuration control, which is used to
     configure the chat bot."""
 
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, model_confs: ModelConfigurations):
         super().__init__()
         self.page = page
+        self.model_confs = model_confs
         self.dd_model = None
         self.text_model_info = None
         self.button_apply = None
         self.conf_change_hook = None
 
-    @staticmethod
-    def __params_to_str(params: dict) -> str:
-        """This function converts the model parameters to a string."""
-        res = ""
-        for key, value in params.items():
-            res += f"{key}: {value}\n"
-
-        return res
-
     def __dropdown_changed(self, event):
         """This function is called when the user selects a model from the
         dropdown."""
         model_name = self.dd_model.value
-        self.text_model_info.value = ConfigurationControl.__params_to_str(
-            MODEL_INFO[model_name]
-        )
+        self.text_model_info.value = self.model_confs.params_to_str(model_name)
         self.text_model_info.update()
 
     def __on_apply(self, event):
@@ -61,7 +51,7 @@ class ConfigurationControl(ft.UserControl):
         cached_repos = scan_cache_dir().repos
         cached_repo_names = [repo.repo_id for repo in cached_repos]
         options = []
-        for model_name, info in MODEL_INFO.items():
+        for model_name, info in self.model_confs.confs.items():
             model_repo = info["repo"]
             if model_repo in cached_repo_names:
                 option = model_repo
@@ -92,9 +82,7 @@ class ConfigurationControl(ft.UserControl):
         # This has to be done here because, before, the page is not created
         model_name = get_init_config(self.page)
         self.dd_model.value = model_name
-        self.text_model_info.value = ConfigurationControl.__params_to_str(
-            MODEL_INFO[model_name]
-        )
+        self.text_model_info.value = self.model_confs.params_to_str(model_name)
         self.update()
 
     def set_conf_change_hook(self, hook):

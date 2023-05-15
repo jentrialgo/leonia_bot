@@ -1,0 +1,47 @@
+DISTILGPT2:
+  do_sample: true
+  max_length: 1000
+  num_return_sequences: 1
+  padding: false
+  repo: distilgpt2
+  token_bot: <|assistant|>
+  token_end: <|endoftext|>
+  token_human: <|prompter|>
+  top_k: 50
+  top_p: 0.95
+OASST_SFT_4_PYTHIA_12B_EPOCH_3_5:
+  do_sample: true
+  max_length: 1000
+  num_return_sequences: 1
+  padding: true
+  repo: OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5
+  requirements: 48 GB RAM, 23 GB disk
+  token_bot: <|assistant|>
+  token_end: <|endoftext|>
+  token_human: <|prompter|>
+  top_k: 50
+  top_p: 0.95
+OASST_SFT_7_STABLELM_7B_EPOCH_3:
+  do_sample: true
+  max_length: 1000
+  num_return_sequences: 1
+  padding: true
+  repo: OpenAssistant/stablelm-7b-sft-v7-epoch-3
+  requirements: 32 GB RAM (CPU), 15 GB disk
+  token_bot: <|ASSISTANT|>
+  token_end: <|endoftext|>
+  token_human: <|USER|>
+  top_k: 50
+  top_p: 0.95
+STABLELM-TUNED-ALPHA-3B:
+  do_sample: true
+  max_length: 1000
+  num_return_sequences: 1
+  padding: false
+  repo: stabilityai/stablelm-tuned-alpha-3b
+  requirements: 16 GB RAM (CPU), 14 GB disk
+  token_bot: <|ASSISTANT|>
+  token_end: <|endoftext|>
+  token_human: <|USER|>
+  top_k: 50
+  top_p: 0.95
